@@ -1,36 +1,46 @@
 arch ?= x86_64
-kernel := build/kernel-$(arch).bin
-iso := build/os-$(arch).iso
 
-linker_script := arch/$(arch)/linker.ld
-grub_cfg := arch/$(arch)/grub.cfg
-assembly_source_files := $(wildcard src/asm/$(arch)/*.asm)
-assembly_object_files := $(patsubst src/asm/$(arch)/%.asm, \
-	build/asm/$(arch)/%.o, $(assembly_source_files))
+build_dir := $(shell pwd)/build
+asm_build_dir := $(build_dir)/asm/$(arch)
+asm_src_dir := $(shell pwd)/src/asm/$(arch)
+config_dir := $(shell pwd)/arch/$(arch)
+
+kernel := $(build_dir)/kernel-$(arch).bin
+iso := $(build_dir)/os-$(arch).iso
+main := $(shell pwd)/src/main.cr
+boot := 
+
+linker_script := $(config_dir)/linker.ld
+grub_cfg := $(config_dir)/grub.cfg
+
+qemu_flags := -no-reboot -no-shutdown -m 4096
+link_flags := -L "$(build_dir)/asm/$(arch)/" -T "$(linker_script)" -nodefaultlibs -nostdlib -Wl,-n,--gc-sections,--build-id=none
+crystal_flags := --verbose --target=x86_64 --prelude=empty --link-flags "$(link_flags)"
 
 .PHONY: all clean run iso
 
 all: $(kernel)
 
 clean:
-	@rm -r build
+	@rm -r $(build_dir)
 
 run: $(iso)
-	@qemu-system-x86_64 -cdrom $(iso)
+	@qemu-system-x86_64 $(qemu_flags) -cdrom $(iso)
 
 iso: $(iso)
 
+kernel: $(kernel)
+
 $(iso): $(kernel) $(grub_cfg)
-	@mkdir -p build/isofiles/boot/grub
-	@cp $(kernel) build/isofiles/boot/kernel.bin
-	@cp $(grub_cfg) build/isofiles/boot/grub
-	@grub2-mkrescue -o $(iso) build/isofiles 2> /dev/null
-	@rm -r build/isofiles
+	@mkdir -p $(build_dir)/isofiles/boot/grub
+	@cp $(kernel) $(build_dir)/isofiles/boot/kernel.bin
+	@cp $(grub_cfg) $(build_dir)/isofiles/boot/grub
+	@grub2-mkrescue -o $(iso) $(build_dir)/isofiles 2> /dev/null
+	@rm -r $(build_dir)/isofiles
 
-$(kernel): $(assembly_object_files) $(linker_script)
-	@ld -n -T $(linker_script) -o $(kernel) $(assembly_object_files)
+$(kernel): boot.o $(linker_script)
+	crystal build $(main) $(crystal_flags) -o $@
 
-# compile assembly files
-build/asm/$(arch)/%.o: src/asm/$(arch)/%.asm
-	@mkdir -p $(shell dirname $@)
-	@nasm -felf64 $< -o $@
+boot.o: $(asm_src_dir)/boot.asm $(asm_src_dir)/multiboot_header.asm $(asm_src_dir)/long_mode_start.asm
+	@mkdir -p $(asm_build_dir)
+	@nasm -felf64 -i $(asm_src_dir)/ $< -o $(asm_build_dir)/$@

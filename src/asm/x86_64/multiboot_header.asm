@@ -72,14 +72,6 @@ header_start:
     ; checksum
     dd  KERNEL_START - (MULTIBOOT2_HEADER_MAGIC + MULTIBOOT_ARCHITECTURE_I386 + (header_end - header_start))
 
-;framebuffer_tag_start:	
-;	dw MULTIBOOT_HEADER_TAG_FRAMEBUFFER
-;	dw MULTIBOOT_HEADER_TAG_OPTIONAL
-;	dd framebuffer_tag_end - framebuffer_tag_start
-;	dd 1024
-;	dd 768
-;	dd 32
-;framebuffer_tag_end:
 	dw MULTIBOOT_HEADER_TAG_END
 	dw 0
 	dd 8

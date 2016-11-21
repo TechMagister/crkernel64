@@ -1,5 +1,7 @@
 OUTPUT_FORMAT(elf64-x86-64)
-ENTRY(_start)
+ENTRY(start)
+
+INPUT(boot.o)
 
 SECTIONS {
     . = 1M;
@@ -7,7 +9,7 @@ SECTIONS {
     .boot :
     {
         /* ensure that the multiboot header is at the beginning */
-        *(.multiboot_header)
+        KEEP(*(.multiboot_header))
     }
 
     .text :
