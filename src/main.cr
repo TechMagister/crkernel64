@@ -1,7 +1,7 @@
+require "./core/*"
 require "./crkernel64/*"
 
-def kernel_main
-  a = "Kernel String"
-end
-
-kernel_main
+Terminal.clear
+Terminal.puts "Kernel booting with Crystal!"
+Terminal.puts
+Terminal.puts "Have fun :)"

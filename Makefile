@@ -8,14 +8,14 @@ config_dir := $(shell pwd)/arch/$(arch)
 kernel := $(build_dir)/kernel-$(arch).bin
 iso := $(build_dir)/os-$(arch).iso
 main := $(shell pwd)/src/main.cr
-boot := 
+prelude := empty
 
 linker_script := $(config_dir)/linker.ld
 grub_cfg := $(config_dir)/grub.cfg
 
 qemu_flags := -no-reboot -no-shutdown -m 4096
 link_flags := -L "$(build_dir)/asm/$(arch)/" -T "$(linker_script)" -nodefaultlibs -nostdlib -Wl,-n,--gc-sections,--build-id=none
-crystal_flags := --verbose --target=x86_64-linux-gnu --prelude=empty --link-flags "$(link_flags)"
+crystal_flags := --verbose --target=x86_64-linux-gnu --prelude=$(prelude) --link-flags "$(link_flags)"
 
 .PHONY: all clean run iso
 
