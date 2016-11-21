@@ -1,5 +1,5 @@
 
-ASM_SRC := $(shell pwd)/asm/x86
+ASM_SRC := $(shell pwd)/asm/x64
 BUILD_DIR := $(shell pwd)/.build
 
 LINK_FILE := $(shell pwd)/scripts/linker.ld
