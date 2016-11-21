@@ -6,9 +6,6 @@
 
 global _start
 
-section .boot
-%include "multiboot_header.asm"
-
 section .text
 bits 32
 _start:
